@@ -1,21 +1,22 @@
-FROM tiendang/madolche-workplace:latest-v7.3
+ARG PHP_VERSION
+
+FROM tiendang/madolche-workplace:latest-v${PHP_VERSION}
 
 LABEL maintainer="TienDang <tiendang.memo@gmail.com>"
-
-ARG PHP_VERSION=7.3
 
 RUN apt-get update; \
     apt-get upgrade -y; \
     apt-get install -y --no-install-recommends
 
+ARG PHP_VERSION
 ###########################################################################
 # Set Timezone
 ###########################################################################
 
-ARG TIMEZONE
-ENV TZ ${TIMEZONE}
-
-RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
+#ARG TIMEZONE
+#ENV TZ ${TIMEZONE}
+#
+#RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 ###########################################################################
 # ImageMagick:

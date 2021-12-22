@@ -1,13 +1,15 @@
-FROM tiendang/madolche-php-fpm:latest-v7.3
+ARG PHP_VERSION
+
+FROM tiendang/madolche-php-fpm:latest-v${PHP_VERSION}
 
 LABEL maintainer="TienDang <tiendang.memo@gmail.com>"
 
 ARG TIMEZONE
 
 # Set timezone
-RUN ln -snf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && echo ${TIMEZONE} > /etc/timezone \
-&& printf '[PHP]\ndate.timezone = "%s"\n', ${TIMEZONE} > /usr/local/etc/php/conf.d/tzone.ini \
-&& "date"
+#RUN ln -snf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime && echo ${TIMEZONE} > /etc/timezone \
+#&& printf '[PHP]\ndate.timezone = "%s"\n', ${TIMEZONE} > /usr/local/etc/php/conf.d/tzone.ini \
+#&& "date"
 
 RUN apt-get update; \
     apt-get upgrade -y; \

@@ -11,6 +11,7 @@ services:
             context: ./infrastructure/workspace
             args:
                 TIMEZONE: ${TIMEZONE}
+                PHP_VERSION: ${PHP_VERSION}
         volumes:
             - ./infrastructure/workspace/conf.d/php-ini-overrides.ini:/usr/local/etc/php/conf.d/php-ini-overrides.ini
             - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
@@ -25,6 +26,7 @@ services:
         build:
             context: ./infrastructure/php-fpm
             args:
+                PHP_VERSION: ${PHP_VERSION}
                 TIMEZONE: ${TIMEZONE}
                 INSTALL_XDEBUG: true
         volumes:
