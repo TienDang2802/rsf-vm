@@ -1,91 +1,85 @@
 version: '3.8'
 
 networks:
-    backend:
-        driver: ${NETWORKS_DRIVER}
-        
-services:
-    ### Workspace Utilities ##################################
-    workspace:
-        build:
-            context: ./infrastructure/workspace
-            args:
-                TIMEZONE: ${TIMEZONE}
-                PHP_VERSION: ${PHP_VERSION}
-        volumes:
-            - ./infrastructure/workspace/conf.d/php-ini-overrides.ini:/usr/local/etc/php/conf.d/php-ini-overrides.ini
-            - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
-        tty: true
-        environment:
-            - PHP_IDE_CONFIG=serverName=${PHP_IDE_CONFIG} # CLI
-        networks:
-            - backend
-    
-    ### PHP-FPM ##############################################
-    php-fpm:
-        build:
-            context: ./infrastructure/php-fpm
-            args:
-                PHP_VERSION: ${PHP_VERSION}
-                TIMEZONE: ${TIMEZONE}
-                INSTALL_XDEBUG: true
-        volumes:
-            - ./infrastructure/php-fpm/conf.d/php-ini-overrides.ini:/usr/local/etc/php/conf.d/php-ini-overrides.ini
-            - ./infrastructure/php-fpm/conf.d/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
-            - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
-        environment:
-            - PHP_IDE_CONFIG=serverName=${PHP_IDE_CONFIG}
-        expose:
-            - "9000"
-        depends_on:
-            - workspace
-        networks:
-            - backend
-    
-    ### NGINX Server #########################################
-    nginx:
-        build:
-            context: ./infrastructure/nginx
-            args:
-                PHP_UPSTREAM_CONTAINER: "php-fpm"
-                PHP_UPSTREAM_PORT: 9000
-        volumes:
-            - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
-            - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
-            - ${NGINX_SITES_PATH}:/etc/nginx/sites-available
-        depends_on:
-            - php-fpm
-        ports:
-            - "80:80"
-            - "443:443"
-        networks:
-            - backend
+  backend:
+    driver: ${NETWORKS_DRIVER}
 
-    ### MySQL ###########################################
-    mysql:
-        build:
-            context: ./infrastructure/dbms/mysql
-            args:
-                MYSQL_VERSION: latest
-        environment:
-            MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-            MYSQL_DATABASE: ${MYSQL_DATABASE}
-            MYSQL_USER: ${MYSQL_USER}
-            MYSQL_PASSWORD: ${MYSQL_PASSWORD}
-        volumes:
-            - ${DATA_PATH_HOST}/mysql:/var/lib/mysql
-        ports:
-            - "${MYSQL_PORT}:3306"
-        networks:
-            - backend
-            
-    ### Redis ################################################
-    redis:
-        build:
-            context: ./infrastructure/dbms/redis
-        volumes:
-            - ${DATA_PATH_HOST}/redis:/data
-        ports:
-            - "${REDIS_PORT}:6379"
-        networks:
-            - backend
+services:
+  ### Workspace Utilities ##################################
+  workspace:
+    container_name: '${APP_NAME}-workspace'
+    build:
+      context: ./infrastructure/workspace
+      args:
+        TIMEZONE: ${TIMEZONE}
+        PHP_VERSION: ${PHP_VERSION}
+    volumes:
+      - ./infrastructure/workspace/conf.d/php-ini-overrides.ini:/usr/local/etc/php/conf.d/php-ini-overrides.ini
+      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+    tty: true
+    environment:
+      - PHP_IDE_CONFIG=serverName=${PHP_IDE_CONFIG} # CLI
+    networks:
+      - backend
+
+  ### PHP-FPM ##############################################
+  php-fpm:
+    container_name: '${APP_NAME}-php-fpm'
+    build:
+      context: ./infrastructure/php-fpm
+      args:
+        PHP_VERSION: ${PHP_VERSION}
+        TIMEZONE: ${TIMEZONE}
+        INSTALL_XDEBUG: true
+    volumes:
+      - ./infrastructure/php-fpm/conf.d/php-ini-overrides.ini:/usr/local/etc/php/conf.d/php-ini-overrides.ini
+      - ./infrastructure/php-fpm/conf.d/opcache.ini:/usr/local/etc/php/conf.d/opcache.ini
+      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+    environment:
+      - PHP_IDE_CONFIG=serverName=${PHP_IDE_CONFIG}
+    expose:
+      - "9000"
+    depends_on:
+      - workspace
+    networks:
+      - backend
+
+  ### NGINX Server #########################################
+  nginx:
+    container_name: '${APP_NAME}-nginx'
+    build:
+      context: ./infrastructure/nginx
+      args:
+        PHP_UPSTREAM_CONTAINER: "php-fpm"
+        PHP_UPSTREAM_PORT: 9000
+    volumes:
+      - ${APP_CODE_PATH_HOST}:${APP_CODE_PATH_CONTAINER}${APP_CODE_CONTAINER_FLAG}
+      - ${NGINX_HOST_LOG_PATH}:/var/log/nginx
+      - ${NGINX_SITES_PATH}:/etc/nginx/sites-available
+    depends_on:
+      - php-fpm
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - backend
+
+  ### MySQL ###########################################
+  mysql:
+    container_name: '${APP_NAME}-mysql'
+    build:
+      context: ./infrastructure/dbms/mysql
+      args:
+        MYSQL_VERSION: ${MYSQL_VERSION}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - ${DATA_PATH_HOST}/mysql:/var/lib/mysql
+    user: mysql
+    ports:
+      - "${MYSQL_PORT}:3306"
+    networks:
+      - backend

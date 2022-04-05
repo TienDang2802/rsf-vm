@@ -19,15 +19,6 @@ ARG PHP_VERSION
 #RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 ###########################################################################
-# ImageMagick:
-###########################################################################
-
-#RUN apt-get install -y libmagickwand-dev imagemagick && \
-#    pecl install imagick && \
-#    echo "extension=imagick.so" >> /etc/php/${PHP_VERSION}/mods-available/imagick.ini && \
-#        ln -s /etc/php/${PHP_VERSION}/mods-available/imagick.ini /etc/php/${PHP_VERSION}/cli/conf.d/20-imagick.ini
-
-###########################################################################
 # xDebug:
 ###########################################################################
 

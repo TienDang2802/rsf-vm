@@ -1,5 +1,6 @@
 ARG MYSQL_VERSION
-FROM mysql:${MYSQL_VERSION}
+#FROM mysql:${MYSQL_VERSION} // for Intel Chip
+FROM arm64v8/mysql:${MYSQL_VERSION}-oracle
 
 LABEL maintainer="TienDang <tiendang.memo@gmail.com>"
 
